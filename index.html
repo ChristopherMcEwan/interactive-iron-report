@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phosphorus Removal in Australian Iron Ores: An Interactive Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Visualization & Content Choices:
+        - Introduction/Challenge: Text summarizing the problem, Australia's ore landscape, and EAF/Green Steel demands. Goal: Inform.
+        - Upstream Solutions: Interactive HTML table derived from Report Table 1. Users select a technology to see details. A Chart.js bar chart will dynamically display TRLs or efficiencies. Goal: Compare, Organize, Inform. Interaction: Click to select technology, update detail view and potentially chart. Justification: Makes dense tabular data highly explorable and comparable.
+        - Downstream Solutions: Text explaining EAF phosphorus control, slag engineering, and optimized practices. A simple HTML/CSS diagram illustrating EAF dephosphorization. Goal: Inform, Explain.
+        - Economic & Market Realities: Text summarizing CAPEX/OPEX factors, market impacts of phosphorus, and infrastructure needs. Goal: Inform.
+        - Australian Innovation Landscape: Interactive HTML table derived from Report Table 2. Users select a project to see details. Goal: Organize, Inform. Interaction: Click to select project, update detail view. Justification: Provides easy access to information on key Australian initiatives.
+        - Strategic Pathways & Roadmap: Text summarizing the integrated strategy, RD&D priorities, and a simplified HTML/CSS representation of the roadmap. Goal: Inform, Outline Change.
+        - Conclusion: Summary of the report's main conclusions. Goal: Summarize.
+        All textual content is carefully summarized from the provided report. No SVG graphics or Mermaid JS are used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .nav-link { cursor: pointer; padding: 0.5rem 1rem; border-radius: 0.375rem; transition: background-color 0.3s, color 0.3s; }
+        .nav-link:hover { background-color: #0d9488; color: white; } /* teal-600 hover */
+        .nav-link.active { background-color: #14b8a6; color: white; font-weight: 600; } /* teal-500 active */
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .table-interactive th, .table-interactive td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
+        .table-interactive tbody tr:hover { background-color: #f3f4f6; cursor: pointer; }
+        .detail-view { border: 1px solid #d1d5db; padding: 16px; margin-top: 16px; border-radius: 8px; background-color: #f9fafb; }
+        .eaf-diagram { border: 2px solid #6b7280; padding: 1rem; border-radius: 0.5rem; background-color: #f3f4f6; text-align: center; }
+        .eaf-diagram-box { background-color: #d1d5db; padding: 0.5rem; margin: 0.5rem; border-radius: 0.25rem; }
+        .eaf-arrow { font-size: 1.5rem; margin: 0 0.5rem; }
+        .roadmap-item { border-left: 3px solid #14b8a6; padding-left: 1rem; margin-bottom: 1rem; }
+        .loader {
+            border: 5px solid #f3f3f3; /* Light grey */
+            border-top: 5px solid #14b8a6; /* Teal */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-800">
+
+    <header class="bg-sky-700 text-white p-6 shadow-md">
+        <div class="container mx-auto">
+            <h1 class="text-3xl font-bold">Phosphorus in Australian Iron Ores: A Techno-Economic Review</h1>
+            <p class="text-sky-100 mt-1">An interactive exploration of challenges, solutions, and strategies for EAF steelmaking.</p>
+        </div>
+    </header>
+
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto flex flex-wrap justify-center items-center p-3 space-x-2 sm:space-x-3">
+            <button class="nav-link active" data-target="intro">Challenge</button>
+            <button class="nav-link" data-target="upstream">Upstream Solutions</button>
+            <button class="nav-link" data-target="downstream">Downstream Solutions</button>
+            <button class="nav-link" data-target="economic">Economic Realities</button>
+            <button class="nav-link" data-target="innovation">Australian Innovation</button>
+            <button class="nav-link" data-target="strategy">Strategic Pathways</button>
+            <button class="nav-link" data-target="conclusion">Conclusion</button>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4 sm:p-6">
+        <div id="intro" class="content-section active">
+            <h2 class="text-2xl font-semibold text-sky-700 mb-4">The Phosphorus Challenge in Australian Iron Ore</h2>
+            <p class="mb-4">This section introduces the core problem: Australia holds vast iron ore reserves, but a significant portion has high phosphorus content. This is problematic because steelmaking, especially modern Electric Arc Furnace (EAF) and emerging "green steel" processes, demands very low phosphorus levels (typically below 0.07-0.08 wt%) to avoid brittleness in the final steel product. The report explores how to bridge this gap.</p>
+
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-teal-600 mb-3">Australia's Ore Landscape</h3>
+                    <p class="mb-2">Australia is a dominant global iron ore supplier. However, while premium low-phosphorus hematite ores have been the focus, these are finite. An estimated <strong>8 billion tonnes of high-phosphorus ore (>0.1% P)</strong> exist, particularly in goethite-rich deposits. Utilizing this resource is crucial for the future.</p>
+                    <p>Phosphorus is often finely disseminated within the goethite lattice, making physical separation difficult.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-teal-600 mb-3">EAF & Green Steel Demands</h3>
+                    <p class="mb-2">The shift to EAF steelmaking and "green steel" (using Direct Reduced Iron - DRI) intensifies the need for high-purity feed. DRI plants typically require Fe >67% and combined SiO2 + Al2O3 + P < 3%. EAFs have limited dephosphorization capability (20-50% removal) compared to traditional Basic Oxygen Furnaces.</p>
+                    <p>This creates a challenge: cleaner steel production demands chemically purer ores.</p>
+                </div>
+            </div>
+             <p class="mb-4 text-sm text-stone-600">The original report aimed to provide an integrated techno-economic assessment, addressing critiques of prior work by ensuring robust referencing, discussing economic assumptions, realistically appraising technical feasibility, and including broader perspectives on environmental and regulatory factors.</p>
+        </div>
+
+        <div id="upstream" class="content-section">
+            <h2 class="text-2xl font-semibold text-sky-700 mb-4">Upstream Phosphorus Removal Technologies</h2>
+            <p class="mb-4">This section explores various methods to reduce phosphorus in iron ore *before* it reaches the steelmaking furnace. The effectiveness of these technologies heavily depends on how phosphorus occurs in the ore. For Australian goethitic ores, where phosphorus is often locked within the mineral structure, conventional methods face limitations. The goal is to find economically and environmentally viable ways to upgrade these ores.</p>
+
+            <div class="grid md:grid-cols-3 gap-6 mb-6">
+                <div class="md:col-span-1 bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold text-teal-600 mb-3">Select Technology:</h3>
+                    <select id="techSelector" class="w-full p-2 border border-stone-300 rounded-md">
+                        <option value="">-- Choose a Technology --</option>
+                    </select>
+                    <div id="techDetailView" class="mt-4 detail-view hidden"></div>
+                </div>
+                <div class="md:col-span-2 bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold text-teal-600 mb-3">Comparative Overview</h3>
+                     <p class="text-sm text-stone-600 mb-3">Select a technology from the dropdown to see its details. The chart below can display comparative Technology Readiness Levels (TRLs) or Reported Efficiencies. Note: TRLs are indicative for Australian goethitic ores.</p>
+                    <div class="chart-container">
+                        <canvas id="upstreamChart"></canvas>
+                    </div>
+                    <div class="mt-2 text-center">
+                        <button id="showTrlChart" class="bg-teal-500 hover:bg-teal-600 text-white py-1 px-3 rounded-md text-sm">Show TRLs</button>
+                        <button id="showEfficiencyChart" class="bg-sky-500 hover:bg-sky-600 text-white py-1 px-3 rounded-md text-sm ml-2">Show Efficiencies</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="downstream" class="content-section">
+            <h2 class="text-2xl font-semibold text-sky-700 mb-4">Downstream Phosphorus Control in EAF Steelmaking</h2>
+            <p class="mb-4">Even with upstream efforts, some phosphorus might enter the Electric Arc Furnace (EAF). This section details how steelmakers manage phosphorus during the EAF process itself. The key is to promote the transfer of phosphorus from the molten steel to the slag, which is then removed.</p>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-teal-600 mb-3">Principles of EAF Dephosphorization</h3>
+                    <p class="mb-2">The reaction $2[P]_{\text{metal}} + 5(FeO)_{\text{slag}} + 3(CaO)_{\text{slag}} \rightleftharpoons (3CaO \cdot P_2O_5)_{\text{slag}} + 5[Fe]_{\text{metal}}$ is key.</p>
+                    <p class="mb-2">This is favored by:</p>
+                    <ul class="list-disc list-inside ml-4 mb-2 text-stone-700 space-y-1">
+                        <li><strong>High Slag Basicity:</strong> Achieved by adding lime (CaO). CaO/$SiO_2$ ratio often 2.5-3.0.</li>
+                        <li><strong>High FeO Content in Slag:</strong> Provides oxidizing potential (25-35% FeO). From oxygen injection or iron ore additions.</li>
+                        <li><strong>Lower Temperatures:</strong> Dephosphorization is often done early in the heat, around 1600°C.</li>
+                    </ul>
+                    <p>EAFs typically remove 20-50% of incoming phosphorus, which may be insufficient for high-P feed.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-teal-600 mb-3">Optimized Practices & EAF Diagram</h3>
+                    <p class="mb-2"><strong>Double-Slag Practice:</strong> For high-P heats, the initial P-rich slag is removed, and a new slag is formed for final refining. This prevents phosphorus reversion.</p>
+                    <p class="mb-2"><strong>Timing of Additions:</strong> Lime and oxygen sources are added early. Deoxidizers and alloys are added after P removal.</p>
+                    <div class="eaf-diagram mt-4">
+                        <h4 class="text-md font-semibold mb-2">Simplified EAF Dephosphorization</h4>
+                        <div class="flex items-center justify-center">
+                            <div class="eaf-diagram-box">Molten Steel Bath<br/>[P] + [Fe]</div>
+                            <div class="flex flex-col items-center">
+                                <span class="eaf-arrow text-teal-500">&rarr;</span>
+                                <span class="text-xs">(+ CaO, FeO)</span>
+                                <span class="eaf-arrow text-red-500">&larr;</span>
+                            </div>
+                            <div class="eaf-diagram-box">Slag Layer<br/>($3CaO \cdot P_2O_5$) + (FeO)</div>
+                        </div>
+                        <p class="text-xs mt-2">Phosphorus moves from steel to slag under oxidizing conditions and high basicity.</p>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-6 text-sm text-stone-600">These downstream methods are mature (high TRL). Australian EAFs may need to adapt these more intensively if using DRI from higher-P local ores. An integrated approach, balancing upstream and downstream efforts, is essential.</p>
+        </div>
+
+        <div id="economic" class="content-section">
+            <h2 class="text-2xl font-semibold text-sky-700 mb-4">Techno-Economic Feasibility and Market Context</h2>
+            <p class="mb-4">This section delves into the crucial economic aspects of implementing phosphorus removal. While technical solutions exist, their commercial viability depends on costs, market prices for ores of varying quality, and the significant infrastructure, water, and energy needs, especially for mine-site processing in Australia. Detailed, site-specific feasibility studies are essential but often complex.</p>
+
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-teal-600 mb-3">Cost Factors (CAPEX & OPEX)</h3>
+                    <p class="mb-2"><strong>Selective Roasting (Caustic/Alkali):</strong></p>
+                    <ul class="list-disc list-inside ml-4 mb-2 text-sm text-stone-700">
+                        <li>CAPEX: Roasters, leaching circuits, reagent recovery.</li>
+                        <li>OPEX: Energy (significant), reagents (e.g., NaOH), maintenance.</li>
+                    </ul>
+                    <p class="mb-2"><strong>Acid Leaching:</strong></p>
+                    <ul class="list-disc list-inside ml-4 mb-2 text-sm text-stone-700">
+                        <li>CAPEX: Acid-resistant equipment, waste treatment.</li>
+                        <li>OPEX: Acid costs, neutralization, waste disposal.</li>
+                    </ul>
+                    <p class="mb-2"><strong>Bioleaching:</strong></p>
+                    <ul class="list-disc list-inside ml-4 mb-2 text-sm text-stone-700">
+                        <li>CAPEX: Heap construction/bioreactors, large land area.</li>
+                        <li>OPEX: Reagents (if any), pumping, long leach times impact capital.</li>
+                    </ul>
+                     <p class="text-xs text-stone-500 mt-2">Physical separation generally has lower CAPEX/OPEX than chemical/thermal routes but is less effective for lattice-bound phosphorus.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-teal-600 mb-3">Market Dynamics & Infrastructure</h3>
+                    <p class="mb-2">High phosphorus content incurs price penalties for iron ore. Low-P ores command premiums. "Value-in-Use" (VIU) models assess this economic impact.</p>
+                    <p class="mb-2">The green steel transition will likely tighten quality demands, increasing penalties for high-P ores.</p>
+                    <p class="mb-2"><strong>Infrastructure Needs for Mine-Site Processing:</strong></p>
+                    <ul class="list-disc list-inside ml-4 mb-2 text-sm text-stone-700">
+                        <li>Processing plants, reagent storage, power, water supply, waste management.</li>
+                        <li>Water availability is critical in arid Australian regions.</li>
+                        <li>Energy demands are high, especially for thermal processes; renewable sources are preferred.</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="mb-4 text-sm text-stone-600">Economic viability can be improved by by-product recovery (e.g., phosphate fertilizers). Alternatives like advanced ore blending are used, but may not suffice for very high-P ores or ultra-low P product demands. The "cost of doing nothing" (lost market share, price penalties) is also a key consideration.</p>
+        </div>
+
+        <div id="innovation" class="content-section">
+            <h2 class="text-2xl font-semibold text-sky-700 mb-4">The Australian Innovation Landscape</h2>
+            <p class="mb-4">Australia is actively engaged in research and development to tackle the high-phosphorus iron ore challenge. This section highlights key efforts by research institutions and industry players, focusing on developing commercially viable pathways to upgrade these ores, particularly in the context of green iron and steel production.</p>
+
+            <div class="grid md:grid-cols-3 gap-6 mb-6">
+                 <div class="md:col-span-1 bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold text-teal-600 mb-3">Select Project/Initiative:</h3>
+                    <select id="projectSelector" class="w-full p-2 border border-stone-300 rounded-md">
+                        <option value="">-- Choose a Project --</option>
+                    </select>
+                    <div id="projectDetailView" class="mt-4 detail-view hidden"></div>
+                </div>
+                <div class="md:col-span-2 bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-lg font-semibold text-teal-600 mb-3">Key R&D and Pilot Projects</h3>
+                    <p class="text-sm text-stone-600 mb-3">Select a project from the dropdown to see more details. These initiatives are crucial for advancing phosphorus management and green iron technologies in Australia.</p>
+                    <div id="projectSummaryPlaceholder" class="text-stone-600">
+                        <p>Details of selected project will appear here.</p>
+                        <div class="loader mt-4 hidden" id="projectLoader"></div>
+                    </div>
+                </div>
+            </div>
+            <p class="mt-6 text-sm text-stone-600">Despite promising R&D, commercial implementation faces technical (scale-up, robustness), economic (CAPEX/OPEX, market acceptance), and regulatory/environmental/social barriers (approvals, waste management, social license). Overcoming these requires supportive policies, strategic investment, and collaboration.</p>
+        </div>
+
+        <div id="strategy" class="content-section">
+            <h2 class="text-2xl font-semibold text-sky-700 mb-4">An Integrated Strategy and Recommendations</h2>
+            <p class="mb-4">This section outlines a strategic approach for Australia to unlock the value of its high-phosphorus iron ores. It emphasizes a multi-faceted strategy combining upstream and downstream interventions, prioritizing research and development, and fostering a supportive ecosystem through policy, investment, and collaboration.</p>
+
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-teal-600 mb-3">Multi-Faceted Approach</h3>
+                    <p class="mb-2">A holistic strategy is essential:</p>
+                    <ul class="list-decimal list-inside ml-4 space-y-2 text-stone-700">
+                        <li><strong>Tier 1 (Foundational Optimization):</strong> Maximize cost-effective physical separation and advanced ore blending.</li>
+                        <li><strong>Tier 2 (Targeted Intensive Treatment):</strong> Implement specific chemical, thermal, or biological dephosphorization for ore streams still too high in P, based on techno-economic assessments.</li>
+                        <li><strong>Tier 3 (EAF Phosphorus Management):</strong> Equip EAFs with robust P-management capabilities (slag engineering, double-slag practice).</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-teal-600 mb-3">RD&D Priorities & Policy</h3>
+                    <p class="mb-2"><strong>Key RD&D Focus Areas:</strong></p>
+                    <ul class="list-disc list-inside ml-4 mb-2 text-sm text-stone-700">
+                        <li>Scaling promising Australian technologies (CSIRO, HILT CRC).</li>
+                        <li>Improving reagent efficiency and recovery.</li>
+                        <li>Supporting breakthrough technologies (e.g., Calix ZESTY).</li>
+                        <li>Fundamental research on P-goethite interactions.</li>
+                    </ul>
+                    <p class="mb-2"><strong>Supportive Ecosystem:</strong></p>
+                     <ul class="list-disc list-inside ml-4 text-sm text-stone-700">
+                        <li>Government funding for RD&D and commercialization.</li>
+                        <li>De-risking private investment (incentives, loan guarantees).</li>
+                        <li>Promoting collaboration (industry, research, international).</li>
+                        <li>Streamlined regulatory pathways.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow mt-6">
+                <h3 class="text-xl font-semibold text-teal-600 mb-4">Proposed Roadmap</h3>
+                <div class="roadmap-item">
+                    <h4 class="font-semibold text-md text-sky-600">Short-Term (1-3 years)</h4>
+                    <p class="text-sm text-stone-700">Intensive pilot testing, site-specific feasibility studies, develop VIU models, intensify fundamental research.</p>
+                </div>
+                <div class="roadmap-item">
+                    <h4 class="font-semibold text-md text-sky-600">Medium-Term (3-7 years)</h4>
+                    <p class="text-sm text-stone-700">Design and operate demonstration-scale plants, secure off-take agreements, refine engineering, develop environmental management strategies.</p>
+                </div>
+                <div class="roadmap-item">
+                    <h4 class="font-semibold text-md text-sky-600">Long-Term (7+ years)</h4>
+                    <p class="text-sm text-stone-700">Phased commercial deployment, integration into green steel value chains, continuous optimization.</p>
+                </div>
+                 <p class="mt-4 text-xs text-stone-500">This roadmap requires adaptive management due to the dynamic nature of the field.</p>
+            </div>
+        </div>
+
+        <div id="conclusion" class="content-section">
+            <h2 class="text-2xl font-semibold text-sky-700 mb-4">Conclusion: Navigating the Path to Sustainable Utilization</h2>
+            <p class="mb-3">The effective management of Australia's high-phosphorus iron ore is a strategic imperative, especially with the global shift towards "green steel" demanding high-purity feedstocks. This interactive summary, based on an integrated re-assessment of available technologies and strategies, highlights the complexities and potential solutions.</p>
+            <p class="mb-3">Upstream beneficiation technologies (physical, thermal-chemical, bioleaching, hydrometallurgical) offer various pathways, each with technical and economic trade-offs. Downstream EAF practices can manage residual phosphorus but are not a standalone solution for very high-P ores.</p>
+            <p class="mb-3">The original report, while a useful survey, had limitations in economic analysis and scale-up considerations. This updated perspective aims to provide a more balanced view. A concerted effort involving industry, research institutions (like CSIRO, HILT CRC), and government is crucial.</p>
+            <p class="mb-3">Key next steps include rigorous techno-economic feasibility studies for specific projects, strategic investment in RD&D, and supportive policy frameworks. While the journey is challenging, innovation, thorough assessment, and collaboration can enable Australia to sustainably valorize its iron ore resources and maintain its competitiveness in a changing global market.</p>
+        </div>
+    </main>
+
+    <footer class="bg-sky-800 text-sky-200 text-center p-4 mt-8">
+        <p class="text-sm">&copy; 2024 Interactive Report. Content derived from "Techno-Economic Assessment of Phosphorus Removal from High-Phosphorus Australian Iron Ores for EAF Steelmaking: An Integrated Review and Strategic Outlook".</p>
+    </footer>
+
+<script>
+    const navLinks = document.querySelectorAll('.nav-link');
+    const contentSections = document.querySelectorAll('.content-section');
+    const techSelector = document.getElementById('techSelector');
+    const techDetailView = document.getElementById('techDetailView');
+    const projectSelector = document.getElementById('projectSelector');
+    const projectDetailView = document.getElementById('projectDetailView');
+    const projectSummaryPlaceholder = document.getElementById('projectSummaryPlaceholder');
+    const projectLoader = document.getElementById('projectLoader');
+
+    const upstreamTechData = [
+        {
+            name: "Physical Separation",
+            mechanism: "Density, size, surface property differences",
+            efficiency: "Variable, low for bound P",
+            reagents: "Water, flotation reagents (if apatite present)",
+            trl: "2-4 (for bound P); 8-9 (for liberated P)",
+            advantages: "Low cost, established for some ores",
+            challenges: "Low efficiency for lattice-bound P in goethite; pre-concentration.",
+            research: "CSIRO (ultrasonic desliming)"
+        },
+        {
+            name: "Caustic Roast & Leach",
+            mechanism: "Goethite dehydroxylation, P liberation, caustic dissolution",
+            efficiency: "~50% (CSIRO low-temp)",
+            reagents: "NaOH (~10 wt%), 300-350°C roast, water/caustic leach",
+            trl: "4-6",
+            advantages: "Effective P reduction to market specs demonstrated.",
+            challenges: "High NaOH cost/consumption, energy, NaOH recovery, waste liquor, water use, scale-up.",
+            research: "CSIRO"
+        },
+        {
+            name: "Other Alkali/Reductive Roast",
+            mechanism: "Formation of leachable/separable P-compounds",
+            efficiency: "70-80%+",
+            reagents: "Na2CO3, Na2SO4, alkali chlorides; 600-900°C; reducing/oxidizing atm.",
+            trl: "3-5",
+            advantages: "High P removal possible.",
+            challenges: "Higher temperatures, energy costs, reagent costs & recovery, complex chemistry, scale-up.",
+            research: "Research based on Chinese/WA ores"
+        },
+        {
+            name: "Acid Leaching (Direct)",
+            mechanism: "Dissolution of P-minerals/adsorbed P",
+            efficiency: ">90% (lab)",
+            reagents: "H2SO4, HCl, HNO3; ambient to moderate temps",
+            trl: "3-5",
+            advantages: "High P removal in lab.",
+            challenges: "Iron loss, sludge, acid cost & recovery, corrosion, waste acid disposal, scale-up.",
+            research: "General lab studies; some WA ore specific"
+        },
+        {
+            name: "Bioleaching",
+            mechanism: "Microbial acid generation, P dissolution",
+            efficiency: "50-87% (lab/pilot)",
+            reagents: "Bacteria/fungi, pyrite (optional), mild temps, controlled pH",
+            trl: "4-5",
+            advantages: "Low chemical cost, potentially low energy, \"green\" process.",
+            challenges: "Very slow kinetics, large footprint, maintaining microbial activity, water use, scalability, lab to field translation.",
+            research: "Australian research on local microbes, pilot tests"
+        },
+        {
+            name: "Advanced Hydrometallurgy",
+            mechanism: "Alkaline hydrothermal treatment; Fe(II)-catalysed recrystallisation; Brine-to-NaOH",
+            efficiency: "~80% (specific methods)",
+            reagents: "NaOH, Fe(II) salts; specific temps/pressures",
+            trl: "3-4",
+            advantages: "Novel mechanisms, potential for higher selectivity or integrated waste valorization.",
+            challenges: "Early research stage, complex chemistry, reagent stability/recovery, conditions costly at scale.",
+            research: "CSIRO (Fe(II) catalysis), HILT CRC (brine-to-NaOH leaching)"
+        }
+    ];
+
+    const projectData = [
+        {
+            name: "CSIRO Low-Temp Caustic Roast-Leach",
+            lead: "CSIRO",
+            focus: "Alkali roasting and leaching",
+            p_handling: "Reduces P from ~0.15% to 0.075% in Pilbara goethite",
+            status: "Pilot / Proof-of-concept",
+            outcomes: "~50% P removal, meets market P specs.",
+            relevance: "Directly targets high-P goethitic ores."
+        },
+        {
+            name: "CSIRO Reductive Roast + Na2CO3",
+            lead: "CSIRO / Collaborators",
+            focus: "Reductive roasting with alkali additives, magnetic separation",
+            p_handling: "Reduces P (e.g., 0.82% to 0.06-0.07% in one study on WA ore)",
+            status: "Lab / Pilot",
+            outcomes: "High P removal (e.g., 74% dephosphorization), high Fe recovery.",
+            relevance: "Applicable to high-P oolitic and other WA ores."
+        },
+        {
+            name: "CSIRO Fe(II)-Catalysed Recrystallisation",
+            lead: "CSIRO",
+            focus: "Low-temp hydrometallurgical treatment of goethite",
+            p_handling: "Enhances P mobility and extraction from P-goethite.",
+            status: "Lab Research",
+            outcomes: "~79.5% P removal from synthetic P-goethite; ~10% improvement over no Fe(II) treatment.",
+            relevance: "Fundamental research with potential for novel P extraction from goethite."
+        },
+        {
+            name: "HILT CRC RP1.011 (Brine-to-NaOH Leaching)",
+            lead: "HILT CRC (Curtin Uni, Uni Adelaide, FMG, Roy Hill, MRIWA, etc.)",
+            focus: "Hydrometallurgical leaching using NaOH derived from desalination brine",
+            p_handling: "Removes impurities including Si, Al, and P from low-grade ores/tailings.",
+            status: "Stage 1 (Core Research) completed; Stage 2 (Commercialisation) ongoing.",
+            outcomes: "Upgrade low-grade ores for DRI; produce byproducts (zeolites, fresh water).",
+            relevance: "Targets upgrading low-grade (often high-P) hematite/goethite ores and tailings."
+        },
+        {
+            name: "Fortescue Green Metal Project",
+            lead: "Fortescue Metals Group",
+            focus: "Green H2 reduction (sponge iron) + Electric Smelting Furnace (ESF)",
+            p_handling: "Aims for \"high purity green iron metal,\" implying impurity management.",
+            status: "Under construction (1,500 tpa plant)",
+            outcomes: "First production anticipated 2025; part of plan for >100Mtpa green iron to China.",
+            relevance: "Processes hematite and magnetite; crucial for FMG's high-P ore streams if \"high purity\" is achieved economically."
+        },
+        {
+            name: "Calix ZESTY Iron Technology",
+            lead: "Calix Ltd. / Partners",
+            focus: "Electrically heated H2 direct reduction kiln",
+            p_handling: "Potential to handle fine particles and various ore types (incl. hematite), may aid impurity removal vs. pellet-based DRI.",
+            status: "Pilot-scale testing; FEED study for 30,000 tpa demo plant.",
+            outcomes: "Targets min. H2 use (54kg/t Fe); HBI cost $630-800/t.",
+            relevance: "Potential pathway for lower-grade, higher-impurity ores (like many high-P Australian ores) into green iron, avoiding pelletization."
+        }
+    ];
+
+    function populateSelectors() {
+        upstreamTechData.forEach(tech => {
+            const option = document.createElement('option');
+            option.value = tech.name;
+            option.textContent = tech.name;
+            techSelector.appendChild(option);
+        });
+
+        projectData.forEach(project => {
+            const option = document.createElement('option');
+            option.value = project.name;
+            option.textContent = project.name;
+            projectSelector.appendChild(option);
+        });
+    }
+
+    techSelector.addEventListener('change', function() {
+        const selectedTechName = this.value;
+        if (selectedTechName) {
+            const tech = upstreamTechData.find(t => t.name === selectedTechName);
+            techDetailView.innerHTML = `
+                <h4 class="font-semibold text-md mb-1">${tech.name}</h4>
+                <p class="text-sm"><strong>Mechanism:</strong> ${tech.mechanism}</p>
+                <p class="text-sm"><strong>Efficiency:</strong> ${tech.efficiency}</p>
+                <p class="text-sm"><strong>Reagents/Conditions:</strong> ${tech.reagents}</p>
+                <p class="text-sm"><strong>Indicative TRL:</strong> ${tech.trl}</p>
+                <p class="text-sm"><strong>Advantages:</strong> ${tech.advantages}</p>
+                <p class="text-sm"><strong>Challenges:</strong> ${tech.challenges}</p>
+                <p class="text-sm"><strong>Australian Research:</strong> ${tech.research}</p>
+            `;
+            techDetailView.classList.remove('hidden');
+        } else {
+            techDetailView.classList.add('hidden');
+        }
+    });
+
+    projectSelector.addEventListener('change', function() {
+        const selectedProjectName = this.value;
+        projectDetailView.classList.add('hidden');
+        projectSummaryPlaceholder.innerHTML = ''; // Clear previous
+
+        if (selectedProjectName) {
+            projectLoader.classList.remove('hidden');
+            projectSummaryPlaceholder.appendChild(projectLoader);
+
+            setTimeout(() => { // Simulate data loading
+                const project = projectData.find(p => p.name === selectedProjectName);
+                projectDetailView.innerHTML = `
+                    <h4 class="font-semibold text-md mb-1">${project.name}</h4>
+                    <p class="text-sm"><strong>Lead Organisation(s):</strong> ${project.lead}</p>
+                    <p class="text-sm"><strong>Technology Focus:</strong> ${project.focus}</p>
+                    <p class="text-sm"><strong>P-Removal/Impurity Handling:</strong> ${project.p_handling}</p>
+                    <p class="text-sm"><strong>Scale/Status:</strong> ${project.status}</p>
+                    <p class="text-sm"><strong>Key Outcomes/Targets:</strong> ${project.outcomes}</p>
+                    <p class="text-sm"><strong>Relevance to High-P Ores:</strong> ${project.relevance}</p>
+                `;
+                projectDetailView.classList.remove('hidden');
+                projectSummaryPlaceholder.innerHTML = ''; // Clear loader
+                projectSummaryPlaceholder.appendChild(projectDetailView);
+                projectLoader.classList.add('hidden');
+            }, 500);
+        } else {
+             projectSummaryPlaceholder.innerHTML = '<p>Details of selected project will appear here.</p>';
+        }
+    });
+
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            const targetId = link.getAttribute('data-target');
+
+            navLinks.forEach(navLink => navLink.classList.remove('active'));
+            link.classList.add('active');
+
+            contentSections.forEach(section => {
+                if (section.id === targetId) {
+                    section.classList.add('active');
+                } else {
+                    section.classList.remove('active');
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+
+    let upstreamChartInstance = null;
+    const upstreamChartCanvas = document.getElementById('upstreamChart').getContext('2d');
+
+    function createUpstreamChart(data, label, yAxisLabel) {
+        if (upstreamChartInstance) {
+            upstreamChartInstance.destroy();
+        }
+        upstreamChartInstance = new Chart(upstreamChartCanvas, {
+            type: 'bar',
+            data: {
+                labels: upstreamTechData.map(tech => tech.name),
+                datasets: [{
+                    label: label,
+                    data: data,
+                    backgroundColor: 'rgba(20, 184, 166, 0.6)', // teal-500
+                    borderColor: 'rgba(13, 148, 136, 1)', // teal-600
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: yAxisLabel
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 45,
+                            minRotation: 45,
+                             callback: function(value, index, values) {
+                                const label = this.getLabelForValue(value);
+                                return label.length > 16 ? label.substring(0, 16) + '...' : label;
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y;
+                                    if (yAxisLabel.toLowerCase().includes("efficiency")) label += '%';
+                                }
+                                return label;
+                            },
+                             title: function(tooltipItems) {
+                                return upstreamTechData[tooltipItems[0].dataIndex].name;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function parseTrl(trlString) {
+        if (!trlString) return 0;
+        const parts = trlString.split('(')[0].trim(); // "2-4 (for bound P)" -> "2-4"
+        if (parts.includes('-')) {
+            return parseFloat(parts.split('-')[1]); // Use upper bound for simplicity or average
+        }
+        return parseFloat(parts) || 0;
+    }
+
+    function parseEfficiency(effString) {
+        if (!effString) return 0;
+        const match = effString.match(/(\d+(\.\d+)?)/); // Extracts first number
+        return match ? parseFloat(match[1]) : 0;
+    }
+
+
+    document.getElementById('showTrlChart').addEventListener('click', () => {
+        const trlData = upstreamTechData.map(tech => parseTrl(tech.trl));
+        createUpstreamChart(trlData, 'Indicative TRL', 'Technology Readiness Level (TRL)');
+    });
+
+    document.getElementById('showEfficiencyChart').addEventListener('click', () => {
+        const efficiencyData = upstreamTechData.map(tech => parseEfficiency(tech.efficiency));
+        createUpstreamChart(efficiencyData, 'Reported Efficiency (%)', 'Efficiency (%)');
+    });
+
+    // Initial setup
+    populateSelectors();
+    document.getElementById('showTrlChart').click(); // Show TRL chart by default
+
+</script>
+</body>
+</html>
